@@ -1,0 +1,18 @@
+#!/bin/bash
+
+fpgafolder=/mit/6.175/fpga-users
+
+if [ ! -d "$fpgafolder" ] ; then
+    echo "ERROR: Cannot find the folder \"$fpgafolder\". Please e-mail"
+    echo "the TA to fix this problem."
+    exit 1
+fi
+
+if [ ! -f "$fpgafolder/status.txt" ] ; then
+    echo "ERROR: Cannot find the file \"$fpgafolder/status.txt\". Please e-mail"
+    echo "the TA to fix this problem."
+    exit 1
+fi
+
+echo "FPGA current status: `tail -n 1 $fpgafolder/status.txt`"
+exit 0

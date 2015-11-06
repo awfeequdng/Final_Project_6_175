@@ -1,0 +1,42 @@
+#!/bin/bash
+
+buildfolder=xilinx
+bitfile=$buildfolder/fpga.bit
+fpgafolder=/mit/6.175/fpga-users
+userfolder=$fpgafolder/$USER
+
+# First make sure there is a bitfile in the expected place
+if [ ! -d "$buildfolder" ] ; then
+    echo "ERROR: Cannot find folder \"$buildfolder\". Make sure you are in scemi/fpga_vc707/ and"
+    echo "make sure you have run \"vivado_setup build -v\"."
+    exit 1
+fi
+
+if [ ! -f "$bitfile" ] ; then
+    echo "ERROR: Cannot find file \"$bitfile\". Make sure you are in"
+    echo "scemi/fpga_vc707/ and make sure you have run \"vivado_setup build -v\"."
+    exit 1
+fi
+
+if [ ! -d "$fpgafolder" ] ; then
+    echo "ERROR: Cannot find the folder \"$fpgafolder\". Please e-mail"
+    echo "the TA to fix this problem."
+    exit 1
+fi
+
+if [ ! -d "$userfolder" ] ; then
+    echo "ERROR: Cannot find the folder \"$userfolder\". Please e-mail"
+    echo "the TA to fix this problem."
+    exit 1
+fi
+
+# Submit bitfile (just copy it to course locker...)
+rm -rf $userfolder/*
+cp $bitfile $userfolder/fpga.bit
+
+echo "Job submitted at `date`"
+echo ""
+./fpga_status
+echo ""
+echo "If the status is blank or the timestamp is more than 15 minutes old,"
+echo "please tell the TA."

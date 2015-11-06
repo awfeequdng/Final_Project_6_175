@@ -1,0 +1,33 @@
+#!/bin/bash
+
+fpgafolder=/mit/6.175/fpga-users
+userfolder=$fpgafolder/$USER
+
+if [ ! -d "$fpgafolder" ] ; then
+    echo "ERROR: Cannot find the folder \"$fpgafolder\". Please e-mail"
+    echo "the TA to fix this problem."
+    exit 1
+fi
+
+if [ ! -d "$userfolder" ] ; then
+    echo "ERROR: Cannot find the folder \"$userfolder\". Please e-mail"
+    echo "the TA to fix this problem."
+    exit 1
+fi
+
+## experimental: show results in real time
+# tail -f $userfolder/results.txt
+
+while true ; do
+    if [ ! -f "$userfolder/fpga.bit" ] ; then
+        if [ -f "$userfolder/results.txt" ] ; then
+            ## experimental: show results in real time
+            ## this kills the previous tail command (hopefully)
+            # pkill tail
+            cat $userfolder/results.txt
+            exit 0
+        fi
+    fi
+    ./fpga_status
+    sleep 10
+done

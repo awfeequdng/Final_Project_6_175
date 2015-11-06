@@ -1,0 +1,17 @@
+programs/build
+
+scemi/fpga_vc707/*.log
+scemi/fpga_vc707/*.so
+scemi/fpga_vc707/*_dut
+scemi/fpga_vc707/tb
+scemi/fpga_vc707/tbinclude
+scemi/fpga_vc707/scemi.params
+scemi/fpga_vc707/xilinx
+
+scemi/sim/*.log
+scemi/sim/*.so
+scemi/sim/*_dut
+scemi/sim/tb
+scemi/sim/tbinclude
+scemi/sim/*.bspec
+scemi/sim/scemi.params
