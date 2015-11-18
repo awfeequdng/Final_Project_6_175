@@ -1,0 +1,6 @@
+programs/build
+
+scemi/sim/*
+!scemi/sim/project.bld
+!scemi/sim/clean
+!scemi/sim/*.sh
