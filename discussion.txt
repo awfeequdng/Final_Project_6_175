@@ -1,0 +1,72 @@
+1. Data:
+
+Benchmark median
+Cycles = 60700
+Insts  = 4015
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/multiply.riscv.vmh ----
+Benchmark multiply
+Cycles = 247598
+Insts  = 20893
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/qsort.riscv.vmh ----
+Benchmark qsort
+Cycles = 1745636
+Insts  = 123928
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/towers.riscv.vmh ----
+Benchmark tower
+Cycles = 76567
+Insts  = 6096
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/vvadd.riscv.vmh ----
+Benchmark vvadd
+Cycles = 27720
+Insts  = 2408
+Return 0
+PASSED
+
+2. Part II
+
+Benchmark median
+Cycles = 15343
+Insts  = 4015
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/multiply.riscv.vmh ----
+Benchmark multiply
+Cycles = 34164
+Insts  = 20893
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/qsort.riscv.vmh ----
+Benchmark qsort
+Cycles = 415833
+Insts  = 123928
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/towers.riscv.vmh ----
+Benchmark tower
+Cycles = 22788
+Insts  = 6096
+Return 0
+PASSED
+
+---- ../../programs/build/benchmarks/vmh/vvadd.riscv.vmh ----
+Benchmark vvadd
+Cycles = 5176
+Insts  = 2408
+Return 0
+PASSED
+

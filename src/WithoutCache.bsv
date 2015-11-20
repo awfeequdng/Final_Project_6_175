@@ -106,11 +106,11 @@ module mkProc(Proc);
 	Ehr#(2, Maybe#(Redirect)) decRedirect <- mkEhr(Invalid);
 
 	// FIFO between six stages
-	Fifo#(12, Fetch2Decode) if2d <- mkCFFifo;
-	Fifo#(12, Decode2RegisterFetch) d2rf <- mkCFFifo;
-	Fifo#(12, Fetch2Execute) rf2e <- mkCFFifo;
-	Fifo#(12, Execute2WriteBack) e2m <- mkCFFifo;
-	Fifo#(12, Execute2WriteBack) m2wb <- mkCFFifo;
+	Fifo#(2, Fetch2Decode) if2d <- mkCFFifo;
+	Fifo#(2, Decode2RegisterFetch) d2rf <- mkCFFifo;
+	Fifo#(2, Fetch2Execute) rf2e <- mkCFFifo;
+	Fifo#(2, Execute2WriteBack) e2m <- mkCFFifo;
+	Fifo#(2, Execute2WriteBack) m2wb <- mkCFFifo;
 
 
     // some garbage may get into ddr3RespFifo during soft reset

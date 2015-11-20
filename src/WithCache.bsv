@@ -5,17 +5,23 @@ import ProcTypes::*;
 import MemTypes::*;
 import MemInit::*;
 import RFile::*;
-import IMemory::*;
-import DMemory::*;
-import FPGAMemory::*;
+import Cache::*;
+import MemUtil::*;
+import SimMem::*;
 import Decode::*;
 import Exec::*;
 import CsrFile::*;
 import Fifo::*;
+import Vector::*;
 import Ehr::*;
 import Btb::*;
 import Bht::*;
 import Scoreboard::*;
+import GetPut::*;
+import ClientServer::*;
+import CacheTypes::*;
+import Memory::*;
+import WideMemInit::*;
 
 // Data structure for Instruction Fetch to Decode stage
 typedef struct {
@@ -63,10 +69,31 @@ typedef struct {
 module mkProc(Proc);
     Ehr#(2, Addr) pcReg <- mkEhr(?);
     RFile            rf <- mkRFile;
-	Scoreboard#(6)   sb <- mkCFScoreboard;
-	FPGAMemory        iMem <- mkFPGAMemory;
-    FPGAMemory        dMem <- mkFPGAMemory;
     CsrFile        csrf <- mkCsrFile;
+
+    // interface FIFOs to real DDR3
+    Fifo#(2, DDR3_Req)  ddr3ReqFifo  <- mkCFFifo;
+    Fifo#(2, DDR3_Resp) ddr3RespFifo <- mkCFFifo;
+	
+    // module to initialize DDR3
+    WideMemInitIfc       ddr3InitIfc <- mkWideMemInitDDR3( ddr3ReqFifo );
+    Bool memReady = ddr3InitIfc.done;
+
+    // wrap DDR3 to WideMem interface
+    WideMem wideMemWrapper <- mkWideMemFromDDR3( ddr3ReqFifo, ddr3RespFifo );
+	
+    // split WideMem interface to two (use it in a multiplexed way) 
+	// This spliter only take action after reset (i.e. memReady && csrf.started)
+	// otherwise the guard may fail, and we get garbage DDR3 resp
+    Vector#(2, WideMem) wideMems <- mkSplitWideMem( memReady && csrf.started, 
+                                                    wideMemWrapper );
+
+	// Memory initialization
+    Cache iMem <- mkCache(wideMems[1]);
+    Cache dMem <- mkCache(wideMems[0]);
+   
+    // Branch prediction structures 
+    Scoreboard#(6)   sb <- mkCFScoreboard;
     Btb#(6)         btb <- mkBtb; // 64-entry BTB
     Bht#(8)         bht <- mkBht; // 256-entry BHT
 
@@ -85,9 +112,15 @@ module mkProc(Proc);
 	Fifo#(2, Execute2WriteBack) e2m <- mkCFFifo;
 	Fifo#(2, Execute2WriteBack) m2wb <- mkCFFifo;
 
-    Bool memReady = iMem.init.done && dMem.init.done;
 
-	rule doInstructionFetch(csrf.started);
+    // some garbage may get into ddr3RespFifo during soft reset
+	// this rule drains all such garbage
+    rule drainMemResponses( !csrf.started );
+        ddr3RespFifo.deq;
+    endrule
+
+	
+    rule doInstructionFetch(csrf.started);
 		
         // fetch
 		iMem.req(MemReq{op: Ld, addr: pcReg[0], data: ?});
@@ -119,6 +152,7 @@ module mkProc(Proc);
         if2d.deq;
 
         // get instruction
+        $display("Getting response from instruction fetch");
         let inst <- iMem.resp();
         
         // check for correct epochs
@@ -347,12 +381,15 @@ module mkProc(Proc);
         return ret;
     endmethod
 
-    method Action hostToCpu(Bit#(32) startpc) if ( !csrf.started && memReady );
+    method Action hostToCpu(Bit#(32) startpc) if ( !csrf.started && memReady && !ddr3RespFifo.notEmpty );
         csrf.start(0); // only 1 core, id = 0
         pcReg[0] <= startpc;
     endmethod
 
-	interface iMemInit = iMem.init;
-    interface dMemInit = dMem.init;
+	// interface for testbench to initialize DDR3
+    interface WideMemInitIfc memInit = ddr3InitIfc;
+	// interface to real DDR3 controller
+    interface DDR3_Client ddr3client = toGPClient( ddr3ReqFifo, ddr3RespFifo );
+
 endmodule
 

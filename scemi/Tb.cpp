@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     InportProxyT<WideMemInit> mem("", "scemi_mem_inport", sceMi);
     OutportQueueT<ToHost> tohost("", "scemi_tohost_outport", sceMi);
     InportProxyT<FromHost> fromhost("", "scemi_fromhost_inport", sceMi);
-    ResetXactor reset("", "scemi", sceMi);
+    ResetXactor reset("", "scemi", sceMi); // FIXME
     ShutdownXactor shutdown("", "scemi_shutdown", sceMi);
 
     // Service SceMi requests
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 
     // loop through all of the files in the command line
     for( int file_number = 1 ; file_number < argc ; file_number++ ) {
-        // Reset the dut.
+        // Reset the dut. //FIXME
         reset.reset();
 
         // Get the VMH file to load.
