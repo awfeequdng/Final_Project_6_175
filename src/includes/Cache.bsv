@@ -10,7 +10,7 @@ import WideMemInit::*;
 
 module mkTranslator(WideMem mem, Cache ifc);
     
-    Fifo#(16, CacheWordSelect) idxQ <- mkCFFifo;
+    Fifo#(2, CacheWordSelect) idxQ <- mkCFFifo;
 
     method Action req(MemReq r);
 
@@ -58,10 +58,10 @@ module mkCache(WideMem mem, Cache ifc);
     Vector#(CacheRows, Reg#(Bool)) dirtyArray <- replicateM(mkReg(False));
 
     // Book keeping
-    Fifo#(16, Data) hitQ <- mkBypassFifo;
+    Fifo#(2, Data) hitQ <- mkBypassFifo;
     Reg#(MemReq) missReq <- mkRegU;
-    Fifo#(16, MemReq) memReqQ <- mkCFFifo;
-    Fifo#(16, CacheLine) memRespQ <- mkCFFifo;
+    Fifo#(2, MemReq) memReqQ <- mkCFFifo;
+    Fifo#(2, CacheLine) memRespQ <- mkCFFifo;
 
 
     function CacheWordSelect getWord(Addr addr) = truncate(addr >> 2);
