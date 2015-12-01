@@ -23,6 +23,7 @@ module mkDCache(WideMem mem, DCache ifc);
 
     // Book keeping
     Fifo#(2, Data) hitQ <- mkBypassFifo;
+    Fifo#(1, MemReq) reqQ <- mkBypassFifo;
     Reg#(MemReq) missReq <- mkRegU;
     Fifo#(2, MemReq) memReqQ <- mkCFFifo;
     Fifo#(2, CacheLine) memRespQ <- mkCFFifo;
@@ -130,8 +131,12 @@ module mkDCache(WideMem mem, DCache ifc);
     endrule
 
 
-    method Action req(MemReq r) if (status == Ready);
-    
+    rule doReq (status == Ready);
+
+        // get request from queue
+        MemReq r = reqQ.first;
+        reqQ.deq;
+
         // calculate cache index and tag
         $display("[Cache] Processing request");
         CacheWordSelect sel = getWord(r.addr);
@@ -167,9 +172,13 @@ module mkDCache(WideMem mem, DCache ifc);
                 status <= StartMiss;
             end
         end
+    endrule
+
+
+    method Action req(MemReq r);
+        reqQ.enq(r);
     endmethod
-
-
+    
     method ActionValue#(Data) resp;
         $display("[Cache] Processing response");
         hitQ.deq;
