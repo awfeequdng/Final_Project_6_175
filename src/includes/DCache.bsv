@@ -415,8 +415,8 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     Fifo#(2, Data) hitQ <- mkBypassFifo;
     Fifo#(1, MemReq) reqQ <- mkBypassFifo;
     Reg#(MemReq) missReq <- mkRegU;
-    Fifo#(2, MemReq) memReqQ <- mkCFFifo;
-    Fifo#(2, CacheLine) memRespQ <- mkCFFifo;
+    Fifo#(2, MemReq) memReqQ <- mkBypassFifo;
+    Fifo#(2, CacheLine) memRespQ <- mkBypassFifo;
 
     // store queue
     StQ#(StQSize) stq <-mkStQ;
@@ -570,20 +570,19 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
                 
                 // check if load hit
                 let x = stq.search(r.addr);
-                if (tagArray[idx] matches tagged Valid .currTag
-                    &&& currTag == tag) begin
+                if (isValid(x)) begin
                     
                     $display("[Cache] Load hit under store miss");
-                    hitQ.enq(dataArray[idx][sel]);
+                    hitQ.enq(fromMaybe(?, x));
                     
                     // dequeue request
                     reqQ.deq;
                 end
-                
-                else if (isValid(x)) begin
+                else if (tagArray[idx] matches tagged Valid .currTag
+                    &&& currTag == tag) begin
                     
                     $display("[Cache] Load hit under store miss");
-                    hitQ.enq(fromMaybe(?, x));
+                    hitQ.enq(dataArray[idx][sel]);
                     
                     // dequeue request
                     reqQ.deq;
