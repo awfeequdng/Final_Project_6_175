@@ -185,9 +185,6 @@ module mkDCache(WideMem mem, DCache ifc);
         hitQ.deq;
         return hitQ.first;
     endmethod
-
-
-
 endmodule
 
 
@@ -570,13 +567,26 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
             // and that nothing is coming back this cycle
             if (missReq.op == St && !mem.respValid) begin
 
+                
                 // check if load hit
                 let x = stq.search(r.addr);
-                if (isValid(x)) hitQ.enq(fromMaybe(?, x));
-                else if (tagArray[idx] matches tagged Valid .currTag 
+                if (tagArray[idx] matches tagged Valid .currTag
                     &&& currTag == tag) begin
-                        $display("[Cache] Load hit under store miss");
-                        hitQ.enq(dataArray[idx][sel]);
+                    
+                    $display("[Cache] Load hit under store miss");
+                    hitQ.enq(dataArray[idx][sel]);
+                    
+                    // dequeue request
+                    reqQ.deq;
+                end
+                
+                else if (isValid(x)) begin
+                    
+                    $display("[Cache] Load hit under store miss");
+                    hitQ.enq(fromMaybe(?, x));
+                    
+                    // dequeue request
+                    reqQ.deq;
                 end
             end
         end
