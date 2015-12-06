@@ -1,0 +1,31 @@
+Discussion Question 1
+
+There is only one store per loop iteration, so we should see store misses fairly 
+rarely thanks to other loop activity (notably nops, etc.)
+
+Indeed, upon log inspection, we can see that we only have a store miss about 
+once every 300 macine cycles.
+
+Discussion Question 2
+
+As expected, IPCs for benchmark programs were not different.
+
+IPCs for Exercise 1
+
+benchmark | IPC
+----------------
+median    | 0.46
+multiply  | 0.61
+qsort     | 0.32
+tower     | 0.27
+vvadd     | 0.47
+
+IPCs for Exercise 2
+
+benchmark | IPC 
+----------------
+median    | 0.46
+multiply  | 0.61
+qsort     | 0.32
+tower     | 0.27
+vvadd     | 0.47
