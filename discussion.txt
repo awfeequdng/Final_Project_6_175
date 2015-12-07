@@ -8,9 +8,11 @@ once every 300 macine cycles.
 
 Discussion Question 2
 
-As expected, IPCs for benchmark programs were not different.
+As expected, IPCs for benchmark programs were not different between Exercise
+1 & 2, and we also saw some improvement across all benchmarks when we did
+Exercise 3 (especially in the tower benchmark).
 
-IPCs for Exercise 1
+IPCs for Exercise 1 & 2
 
 benchmark | IPC
 ----------------
@@ -20,12 +22,12 @@ qsort     | 0.32
 tower     | 0.27
 vvadd     | 0.47
 
-IPCs for Exercise 2
+IPCs for Exercise 3
 
-benchmark | IPC 
-----------------
-median    | 0.46
-multiply  | 0.61
-qsort     | 0.32
-tower     | 0.27
-vvadd     | 0.47
+benchmark | IPC  | change
+-------------------------
+median    | 0.49 | + 0.03 
+multiply  | 0.62 | + 0.01
+qsort     | 0.33 | + 0.01
+tower     | 0.48 | + 0.21
+vvadd     | 0.53 | + 0.06
