@@ -36,7 +36,6 @@ module mkDCache(WideMem mem, DCache ifc);
     rule startMiss (status == StartMiss);
 
         // calculate cache index and tag
-        $display("[[Cache]] Start Miss");
         CacheWordSelect sel = getWord(missReq.addr);
         CacheIndex idx = getIndex(missReq.addr);
         let tag = tagArray[idx];
@@ -44,7 +43,6 @@ module mkDCache(WideMem mem, DCache ifc);
         // figure out if a writeback is necessary
         let dirty = dirtyArray[idx];
         if (isValid(tag) && dirty) begin
-            $display("[[Cache]] -- Writeback dirty cache line --");
             let addr = {fromMaybe(?, tag), idx, sel, 2'b0};
             memReqQ.enq(MemReq {op: St, addr: addr, data:?});
         end
@@ -56,7 +54,6 @@ module mkDCache(WideMem mem, DCache ifc);
 
     rule sendFillReq (status == SendFillReq);
 
-        $display("[[Cache]] Send Fill Request");
         memReqQ.enq(MemReq {op: Ld, addr: missReq.addr, data:?});
         status <= WaitFillResp;
 
@@ -66,7 +63,6 @@ module mkDCache(WideMem mem, DCache ifc);
     rule waitFillResp (status == WaitFillResp);
         
         // calculate cache index and tag
-        $display("[[Cache]] Wait Fill Response");
         CacheWordSelect sel = getWord(missReq.addr);
         CacheIndex idx = getIndex(missReq.addr);
         let tag = getTag(missReq.addr);
@@ -99,7 +95,6 @@ module mkDCache(WideMem mem, DCache ifc);
     rule sendToMemory;
 
         // dequeue to get DRAM request
-        $display("[[Cache]] Sending to DRAM");
         memReqQ.deq;
         let r = memReqQ.first;
 
@@ -124,7 +119,6 @@ module mkDCache(WideMem mem, DCache ifc);
     rule getFromMemory;
 
         // get DRAM response
-        $display("[[Cache]] Getting from DRAM");
         let line <- mem.resp();
         memRespQ.enq(line);
 
@@ -138,7 +132,6 @@ module mkDCache(WideMem mem, DCache ifc);
         reqQ.deq;
 
         // calculate cache index and tag
-        $display("[Cache] Processing request");
         CacheWordSelect sel = getWord(r.addr);
         CacheIndex idx = getIndex(r.addr);
         CacheTag tag = getTag(r.addr);
@@ -151,23 +144,19 @@ module mkDCache(WideMem mem, DCache ifc);
         // check load
         if (r.op == Ld) begin
             if (hit) begin
-                $display("[Cache] Load hit");
                 hitQ.enq(dataArray[idx][sel]);
             end
             else begin
-                $display("[Cache] Load miss");
                 missReq <= r;
                 status <= StartMiss;
             end
         end
         else begin // store request
             if (hit) begin
-                $display("[Cache] Write hit");
                 dataArray[idx][sel] <= r.data;
                 dirtyArray[idx] <= True;
             end
             else begin
-                $display("[Cache] Write miss");
                 missReq <= r;
                 status <= StartMiss;
             end
@@ -181,7 +170,6 @@ module mkDCache(WideMem mem, DCache ifc);
 
 
     method ActionValue#(Data) resp;
-        $display("[Cache] Processing response");
         hitQ.deq;
         return hitQ.first;
     endmethod
@@ -216,7 +204,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
     rule startMiss (status == StartMiss);
 
         // calculate cache index and tag
-        $display("[[Cache]] Start Miss");
         CacheWordSelect sel = getWord(missReq.addr);
         CacheIndex idx = getIndex(missReq.addr);
         let tag = tagArray[idx];
@@ -224,7 +211,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
         // figure out if a writeback is necessary
         let dirty = dirtyArray[idx];
         if (isValid(tag) && dirty) begin
-            $display("[[Cache]] -- Writeback dirty cache line --");
             let addr = {fromMaybe(?, tag), idx, sel, 2'b0};
             memReqQ.enq(MemReq {op: St, addr: addr, data:?});
         end
@@ -236,7 +222,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
 
     rule sendFillReq (status == SendFillReq);
 
-        $display("[[Cache]] Send Fill Request");
         memReqQ.enq(MemReq {op: Ld, addr: missReq.addr, data:?});
         status <= WaitFillResp;
 
@@ -246,7 +231,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
     rule waitFillResp (status == WaitFillResp);
         
         // calculate cache index and tag
-        $display("[[Cache]] Wait Fill Response");
         CacheWordSelect sel = getWord(missReq.addr);
         CacheIndex idx = getIndex(missReq.addr);
         let tag = getTag(missReq.addr);
@@ -280,7 +264,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
     rule sendToMemory;
 
         // dequeue to get DRAM request
-        $display("[[Cache]] Sending to DRAM");
         memReqQ.deq;
         let r = memReqQ.first;
 
@@ -305,7 +288,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
     rule getFromMemory;
 
         // get DRAM response
-        $display("[[Cache]] Getting from DRAM");
         let line <- mem.resp();
         memRespQ.enq(line);
     
@@ -319,7 +301,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
         reqQ.deq;
 
         // calculate cache index and tag
-        $display("[Cache] Processing load request");
         CacheWordSelect sel = getWord(r.addr);
         CacheIndex idx = getIndex(r.addr);
         CacheTag tag = getTag(r.addr);
@@ -333,12 +314,10 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
             if (tagArray[idx] matches tagged Valid .currTag 
                 &&& currTag == tag) begin
 
-                $display("[Cache] Load hit");
                 hitQ.enq(dataArray[idx][sel]);
             
             end
             else begin
-                $display("[Cache] Load miss");
                 missReq <= r;
                 status <= StartMiss;
             end
@@ -349,7 +328,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
     rule doStore (reqQ.first.op == St);
 
         // enqueue store request
-        $display("[Cache] Enqueue store request");
         MemReq r = reqQ.first;
         reqQ.deq;
         stq.enq(r);
@@ -363,7 +341,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
         MemReq r <- stq.issue;
 
         // calculate cache index and tag
-        $display("[Cache] Processing store request");
         CacheWordSelect sel = getWord(r.addr);
         CacheIndex idx = getIndex(r.addr);
         CacheTag tag = getTag(r.addr);
@@ -371,14 +348,12 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
         if (tagArray[idx] matches tagged Valid .currTag 
             &&& currTag == tag) begin
 
-            $display("[Cache] Store hit");
             dataArray[idx][sel] <= r.data;
             dirtyArray[idx] <= True;
             stq.deq;
 
         end
         else begin
-            $display("[Cache] Store miss");
             missReq <= r;
             status <= StartMiss;
         end
@@ -390,7 +365,6 @@ module mkDCacheStQ(WideMem mem, DCache ifc);
     endmethod
     
     method ActionValue#(Data) resp;
-        $display("[Cache] Processing response");
         hitQ.deq;
         return hitQ.first;
     endmethod
@@ -428,7 +402,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     rule startMiss (status == StartMiss);
 
         // calculate cache index and tag
-        $display("[[Cache]] Start Miss");
         CacheWordSelect sel = getWord(missReq.addr);
         CacheIndex idx = getIndex(missReq.addr);
         let tag = tagArray[idx];
@@ -436,7 +409,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
         // figure out if a writeback is necessary
         let dirty = dirtyArray[idx];
         if (isValid(tag) && dirty) begin
-            $display("[[Cache]] -- Writeback dirty cache line --");
             let addr = {fromMaybe(?, tag), idx, sel, 2'b0};
             memReqQ.enq(MemReq {op: St, addr: addr, data:?});
         end
@@ -448,7 +420,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
 
     rule sendFillReq (status == SendFillReq);
 
-        $display("[[Cache]] Send Fill Request");
         memReqQ.enq(MemReq {op: Ld, addr: missReq.addr, data:?});
         status <= WaitFillResp;
 
@@ -458,7 +429,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     rule waitFillResp (status == WaitFillResp);
         
         // calculate cache index and tag
-        $display("[[Cache]] Wait Fill Response");
         CacheWordSelect sel = getWord(missReq.addr);
         CacheIndex idx = getIndex(missReq.addr);
         let tag = getTag(missReq.addr);
@@ -492,7 +462,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     rule sendToMemory;
 
         // dequeue to get DRAM request
-        $display("[[Cache]] Sending to DRAM");
         memReqQ.deq;
         let r = memReqQ.first;
 
@@ -517,7 +486,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     rule getFromMemory;
 
         // get DRAM response
-        $display("[[Cache]] Getting from DRAM");
         let line <- mem.resp();
         memRespQ.enq(line);
     
@@ -530,7 +498,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
         MemReq r = reqQ.first;
             
         // calculate cache index and tag
-        $display("[Cache] Processing load request");
         CacheWordSelect sel = getWord(r.addr);
         CacheIndex idx = getIndex(r.addr);
         CacheTag tag = getTag(r.addr);
@@ -550,12 +517,10 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
                 if (tagArray[idx] matches tagged Valid .currTag 
                     &&& currTag == tag) begin
 
-                    $display("[Cache] Load hit");
                     hitQ.enq(dataArray[idx][sel]);
                 
                 end
                 else begin
-                    $display("[Cache] Load miss");
                     missReq <= r;
                     status <= StartMiss;
                 end
@@ -572,7 +537,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
                 let x = stq.search(r.addr);
                 if (isValid(x)) begin
                     
-                    $display("[Cache] Load hit under store miss");
                     hitQ.enq(fromMaybe(?, x));
                     
                     // dequeue request
@@ -581,7 +545,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
                 else if (tagArray[idx] matches tagged Valid .currTag
                     &&& currTag == tag) begin
                     
-                    $display("[Cache] Load hit under store miss");
                     hitQ.enq(dataArray[idx][sel]);
                     
                     // dequeue request
@@ -595,7 +558,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     rule doStore (reqQ.first.op == St);
 
         // enqueue store request
-        $display("[Cache] Enqueue store request");
         MemReq r = reqQ.first;
         reqQ.deq;
         stq.enq(r);
@@ -609,7 +571,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
         MemReq r <- stq.issue;
 
         // calculate cache index and tag
-        $display("[Cache] Processing store request");
         CacheWordSelect sel = getWord(r.addr);
         CacheIndex idx = getIndex(r.addr);
         CacheTag tag = getTag(r.addr);
@@ -617,14 +578,12 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
         if (tagArray[idx] matches tagged Valid .currTag 
             &&& currTag == tag) begin
 
-            $display("[Cache] Store hit");
             dataArray[idx][sel] <= r.data;
             dirtyArray[idx] <= True;
             stq.deq;
 
         end
         else begin
-            $display("[Cache] Store miss");
             missReq <= r;
             status <= StartMiss;
         end
@@ -636,7 +595,6 @@ module mkDCacheLHUSM(WideMem mem, DCache ifc);
     endmethod
     
     method ActionValue#(Data) resp;
-        $display("[Cache] Processing response");
         hitQ.deq;
         return hitQ.first;
     endmethod
